@@ -7,16 +7,19 @@ import 'package:najati_test/main.dart';
 import 'package:najati_test/models/charachter_model.dart';
 import 'package:najati_test/services/api/charachter.dart';
 import 'package:najati_test/stack.dart';
+import 'package:shimmer/shimmer.dart';
 
+import 'clip.dart';
 import 'core/constants/image_manager.dart';
+import 'core/constants/url_manager.dart';
 import 'core/error/exceptions.dart';
 import 'features/children/presentation/bloc/children_bloc.dart';
 import 'models/child/get_children_response.dart';
 import 'services/api/children.dart';
 
 class GetChildren extends StatefulWidget {
-  const GetChildren({super.key});
-
+  GetChildren(this.name, {super.key});
+  String? name;
   @override
   State<GetChildren> createState() => _GetChildrenState();
 }
@@ -25,6 +28,7 @@ class _GetChildrenState extends State<GetChildren> {
   bool displayCharachter = false;
   bool isLoading = true;
   String? errorMessage;
+  int childId = 0;
   GetChildrenResponse? childrenResponse;
   GetCharacters? charachterResponse;
   int num = 0;
@@ -38,7 +42,7 @@ class _GetChildrenState extends State<GetChildren> {
   Future<GetCharacters?> fetchCharachter() async {
     final resulti;
     try {
-      CharacterServiceImp serviceImp = CharacterServiceImp(dio: Dio());
+      CharacterServiceImp serviceImp = CharacterServiceImp();
       resulti = await serviceImp.getCharachters();
       setState(() {
         charachterResponse = resulti;
@@ -50,14 +54,14 @@ class _GetChildrenState extends State<GetChildren> {
     return charachterResponse;
   }
 
-  Future<bool> createCharachter() async {
-    final resulti;
+  // Future<bool> createCharachter() async {
+  //   final resulti;
 
-    CharacterServiceImp serviceImp = CharacterServiceImp(dio: Dio());
-    resulti = await serviceImp.createCharachter(num: num);
+  //   CharacterServiceImp serviceImp = CharacterServiceImp(dio: Dio());
+  //   resulti = await serviceImp.createCharachter(num: num);
 
-    return resulti;
-  }
+  //   return resulti;
+  // }
 
   Future<void> fetchChildren() async {
     setState(() {
@@ -66,7 +70,7 @@ class _GetChildrenState extends State<GetChildren> {
     });
 
     try {
-      ChildrenServiceImp serviceImp = ChildrenServiceImp(dio: Dio());
+      ChildrenServiceImp serviceImp = ChildrenServiceImp();
       final result = await serviceImp.getChildren();
       setState(() {
         childrenResponse = result;
@@ -122,115 +126,166 @@ class _GetChildrenState extends State<GetChildren> {
   }
 
   Widget _buildMainContent() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Text("تسجيل الدخول", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: screenH * 0.05),
-          Image.asset(
-            'assets/images/Boos.png',
-            height: screenH * 0.12,
-            fit: BoxFit.contain,
+    return ListView(
+      children: [
+        Center(
+          child: Text(
+            "تسجيل الدخول",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: screenH * 0.04),
-          SizedBox(
-            height: screenH * 0.4,
-            child: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: childrenResponse!.data.length,
-              itemBuilder: (context, index) {
-                final child = childrenResponse!.data[index];
+        ),
+        SizedBox(height: screenH * 0.05),
+        Image.asset(
+          'assets/images/Boos.png',
+          height: screenH * 0.12,
+          fit: BoxFit.contain,
+        ),
+        SizedBox(height: screenH * 0.04),
+        SizedBox(
+          height: screenH * 0.115 * childrenResponse!.data.length,
+          child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.all(screenH * 0.02),
+            itemCount: childrenResponse!.data.length,
+            itemBuilder: (context, index) {
+              final child = childrenResponse!.data[index];
 
-                return InkWell(
-                  onTap: () {
+              return InkWell(
+                onTap: () {
+                  childId = child.id;
+
+                  if (child.character != null) {
+                    if (child.character!.image != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => PrayerContainer(childId: childId),
+                        ),
+                      );
+                    }
+                  } else {
                     setState(() {
                       displayCharachter = true;
                     });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: screenW * 0.88,
-                      height: screenH * 0.1,
-                      //  color: Color.fromARGB(115, 0, 0, 0),
-                      decoration: BoxDecoration(
-                        //  color: Color(0x73C2CEE3).withOpacity(0.45),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white, width: 1),
-                        boxShadow: [
-                          // BoxShadow(
-                          //   blurRadius: 18,
-                          //    color: Color(0x73C2CEE3).withOpacity(0.45),
-                          // ),
-                        ],
-                      ),
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: screenW * 0.88,
+                    height: screenH * 0.09,
+                    //  color: Color.fromARGB(115, 0, 0, 0),
+                    decoration: BoxDecoration(
+                      //  color: Color(0x73C2CEE3).withOpacity(0.45),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white, width: 1),
+                      boxShadow: [
+                        // BoxShadow(
+                        //   blurRadius: 18,
+                        //    color: Color(0x73C2CEE3).withOpacity(0.45),
+                        // ),
+                      ],
+                    ),
 
-                      // child: ListTile(
-                      //   leading: CircleAvatar(
-                      //     backgroundImage: NetworkImage(child.image),
-                      //     radius: 30,
-                      //     backgroundColor: Colors.grey[200],
-                      //   ),
-                      //   title: Text(
-                      //     child.name,
-                      //     style: TextStyle(fontWeight: FontWeight.bold),
-                      //     textAlign: TextAlign.right,
-                      //   ),
-                      // ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child:
-                            //   padding: const EdgeInsets.all(16),
-                            Card(
-                              elevation: 4,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child:
+                          //   padding: const EdgeInsets.all(16),
+                          Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Text(child.name),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            width: screenW * 0.1,
+                            height: screenH * 0.1,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                '${UrlManager.baseUrl}${child.image}',
+                                fit: BoxFit.cover,
+                                loadingBuilder: (
+                                  context,
+                                  child,
+                                  loadingProgress,
+                                ) {
+                                  if (loadingProgress == null) return child;
+
+                                  return Shimmer.fromColors(
+                                    baseColor:
+                                        const Color.fromARGB(
+                                          255,
+                                          196,
+                                          250,
+                                          234,
+                                        )!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: screenW * 0.44,
+                                      height: screenH * 0.27,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.error);
+                                },
                               ),
                             ),
+                            // child: Image.asset(
+                            //   ImageManager.firstchild,
+                            // ),
                           ),
-                          SizedBox(width: 10),
-                          Text(child.name),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Image.asset(
-                              ImageManager.noImage,
-                              height: screenH * 0.15,
-                              width: screenW * 0.09,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          if (displayCharachter)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenW * 0.1,
-                    vertical: 13,
-                  ),
-                  child: Text(
-                    "اختر شخصيتك المفضلة",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
                 ),
-                StackList(name: false, charachters: charachterResponse),
-              ],
-            ),
-        ],
-      ),
+              );
+            },
+          ),
+        ),
+
+        if (displayCharachter)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenW * 0.1,
+                  vertical: 13,
+                ),
+                child: Text(
+                  "اختر شخصيتك المفضلة",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              StackList(
+                args: "getChild",
+                name: false,
+                childId: childId,
+                fatherName: widget.name,
+                charachters: charachterResponse,
+                childrenResponse: childrenResponse,
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

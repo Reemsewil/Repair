@@ -11,27 +11,20 @@ class GetChildrenResponse {
 
   factory GetChildrenResponse.fromJson(Map<String, dynamic> json) {
     return GetChildrenResponse(
-      status: json['status'] as String,
-      message: json['message'] as String,
-      data:
-          (json['data'] as List<dynamic>)
-              .map((child) => Child.fromJson(child))
-              .toList(),
+      status: json['status'] ?? '',
+      message: json['message'] ?? '',
+      data: List<Child>.from(
+        json['data'].map((child) => Child.fromJson(child)),
+      ),
     );
   }
-
-  Map<String, dynamic> toJson() => {
-    'status': status,
-    'message': message,
-    'data': data.map((child) => child.toJson()).toList(),
-  };
 }
 
 class Child {
   final int id;
   final String name;
   final String gender;
-  final String image;
+  final String? image;
   final int points;
   final String birthDate;
   final Character? character;
@@ -43,42 +36,30 @@ class Child {
     required this.image,
     required this.points,
     required this.birthDate,
-    this.character,
+    required this.character,
   });
 
   factory Child.fromJson(Map<String, dynamic> json) {
-    final characterData = json['character'];
-
     return Child(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      gender: json['gender'] as String,
-      image: json['image'] as String,
-      points: json['points'] as int,
-      birthDate: json['birth_date'] as String,
+      id: json['id'],
+      name: json['name'],
+      gender: json['gender'],
+      image: json['image'],
+      points: json['points'],
+      birthDate: json['birth_date'],
       character:
-          (characterData is Map<String, dynamic>)
-              ? Character.fromJson(characterData)
+          (json['character'] is Map<String, dynamic>)
+              ? Character.fromJson(json['character'])
               : null,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'gender': gender,
-    'image': image,
-    'points': points,
-    'birth_date': birthDate,
-    'character': character?.toJson() ?? [],
-  };
 }
 
 class Character {
   final int id;
   final String name;
   final String price;
-  final String image;
+  final String? image;
 
   Character({
     required this.id,
@@ -89,17 +70,10 @@ class Character {
 
   factory Character.fromJson(Map<String, dynamic> json) {
     return Character(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      price: json['price'] as String,
-      image: json['image'] as String,
+      id: json['id'],
+      name: json['name'],
+      price: json['price'],
+      image: json['image'],
     );
   }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'price': price,
-    'image': image,
-  };
 }

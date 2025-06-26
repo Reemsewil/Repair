@@ -1,69 +1,108 @@
-class GetStoryResponse {
+class EducationalSectionDetailResponse {
   final String status;
-  final List<Story> data;
+  final String message;
+  final EducationalSectionDetail data;
 
-  GetStoryResponse({required this.status, required this.data});
+  EducationalSectionDetailResponse({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
 
-  factory GetStoryResponse.fromJson(Map<String, dynamic> json) {
-    return GetStoryResponse(
+  factory EducationalSectionDetailResponse.fromJson(Map<String, dynamic> json) {
+    return EducationalSectionDetailResponse(
       status: json['status'],
-      data: (json['data'] as List).map((item) => Story.fromJson(item)).toList(),
+      message: json['message'],
+      data: EducationalSectionDetail.fromJson(json['data']),
     );
   }
 }
 
-class Story {
+class EducationalSectionDetail {
+  final int id;
+  final String name;
+  final String image;
+  final List<CharacterWrapper> characters;
+
+  EducationalSectionDetail({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.characters,
+  });
+
+  factory EducationalSectionDetail.fromJson(Map<String, dynamic> json) {
+    return EducationalSectionDetail(
+      id: json['id'],
+      name: json['name'],
+      image: json['image'],
+      characters:
+          (json['characters'] as List)
+              .map((e) => CharacterWrapper.fromJson(e))
+              .toList(),
+    );
+  }
+}
+
+class CharacterWrapper {
+  final CharacterModel character;
+  final List<CharacterItem> items;
+
+  CharacterWrapper({required this.character, required this.items});
+
+  factory CharacterWrapper.fromJson(Map<String, dynamic> json) {
+    return CharacterWrapper(
+      character: CharacterModel.fromJson(json['character']),
+      items:
+          (json['items'] as List)
+              .map((e) => CharacterItem.fromJson(e))
+              .toList(),
+    );
+  }
+}
+
+class CharacterModel {
   final int id;
   final String name;
   final String price;
   final String image;
-  final CharacterData characterData;
-  final List<String> characterImages;
-  final CharacterSound characterSound;
 
-  Story({
+  CharacterModel({
     required this.id,
     required this.name,
     required this.price,
     required this.image,
-    required this.characterData,
-    required this.characterImages,
-    required this.characterSound,
   });
 
-  factory Story.fromJson(Map<String, dynamic> json) {
-    return Story(
+  factory CharacterModel.fromJson(Map<String, dynamic> json) {
+    return CharacterModel(
       id: json['id'],
       name: json['name'],
       price: json['price'],
       image: json['image'],
-      characterData: CharacterData.fromJson(json['character_data']),
-      characterImages: List<String>.from(json['character_images']),
-      characterSound: CharacterSound.fromJson(json['character_sound']),
     );
   }
 }
 
-class CharacterData {
-  final List<String> explanations;
-  final List<String> partitions;
-
-  CharacterData({required this.explanations, required this.partitions});
-
-  factory CharacterData.fromJson(Map<String, dynamic> json) {
-    return CharacterData(
-      explanations: List<String>.from(json['explanations']),
-      partitions: List<String>.from(json['partitions']),
-    );
-  }
-}
-
-class CharacterSound {
+class CharacterItem {
+  final String image;
   final String sound;
+  final String description;
+  final int order;
 
-  CharacterSound({required this.sound});
+  CharacterItem({
+    required this.image,
+    required this.sound,
+    required this.description,
+    required this.order,
+  });
 
-  factory CharacterSound.fromJson(Map<String, dynamic> json) {
-    return CharacterSound(sound: json['sound']);
+  factory CharacterItem.fromJson(Map<String, dynamic> json) {
+    return CharacterItem(
+      image: json['image'],
+      sound: json['sound'],
+      description: json['description'],
+      order: json['order'],
+    );
   }
 }

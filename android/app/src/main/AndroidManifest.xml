@@ -7,7 +7,7 @@ xmlns:tools="http://schemas.android.com/tools">
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <application
-        android:label="najati_test"
+        android:label="نجاتي"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 <service

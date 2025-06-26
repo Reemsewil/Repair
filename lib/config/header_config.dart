@@ -11,8 +11,8 @@ class HeaderConfig {
         headers: {
           "accept": "*/*",
           "Authorization":
-              "Bearer 2|UuTpr1CMu96g1PQvVVXbPBoO8VFAV2V2fuY68n0Pc0d11185",
-          // "Authorization": "Bearer ${box.get('accessToken')}",
+              // "Bearer 33|0zttjdpD3zpGx59HSRLMRqnEnWHRUAVUtwaErO2oa6de5486",
+              "Bearer ${box.get('accessToken')}",
         },
       );
     } else {

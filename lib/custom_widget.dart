@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:najati_test/bubble.dart';
 import 'package:najati_test/core/constants/image_manager.dart';
+import 'package:najati_test/counter.dart';
+import 'package:najati_test/ty.dart';
 
 import 'core/constants/color_manager.dart';
+import 'education.dart';
 import 'main.dart';
+import 'top_student.dart';
 
 //   color:ColorManager.deepPurpleWithOpacity10,
 //   boxShadow: [
@@ -28,29 +33,67 @@ import 'main.dart';
 //   ),
 
 // --- Custom Widget for the Top-Right Background Circle ---
-class TopRightCircle extends StatelessWidget {
-  TopRightCircle({Key? key, this.childImage}) : super(key: key);
-  bool? childImage = false;
+class TopRightCircleChild extends StatelessWidget {
+  TopRightCircleChild({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    // Get screen dimensions using MediaQuery
     final double screenW = MediaQuery.of(context).size.width;
-    final double screenH = MediaQuery.of(context).size.height;
+    // خلي العرض والارتفاع متساويين عشان الدائرة تكون دائرية فعلاً
+    final double size = screenW * 0.55;
 
     return Positioned(
-      top: 40,
-      right: -55,
+      top: screenH * 0.01,
+      right: -screenH * 0.1,
       child: Opacity(
-        opacity: 0.7,
-        // Removed the extra Center as Container is already positioning
-        child: Container(
-          width: screenW * 0.5,
-          height: screenH * 0.28,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: ColorManager.deepPurple,
-            // Consider using theme colors
-            boxShadow: [BoxShadow(blurRadius: 70)],
+        opacity: 0.8,
+        child: ClipOval(
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              boxShadow: const [
+                BoxShadow(color: Color(0xffD6A2FF), blurRadius: 70),
+              ],
+              shape: BoxShape.circle,
+              color: Color(0xff9556C6).withOpacity(0.07),
+            ),
+            child: Transform.translate(
+              offset: const Offset(0, 30), // 20 pixels down
+              child: childImage(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TopRightCircle extends StatelessWidget {
+  TopRightCircle({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenW = MediaQuery.of(context).size.width;
+    // خلي العرض والارتفاع متساويين عشان الدائرة تكون دائرية فعلاً
+    final double size = screenW * 0.55;
+
+    return Positioned(
+      top: screenH * 0.01,
+      right: -screenH * 0.1,
+      child: Opacity(
+        opacity: 0.8,
+        child: ClipOval(
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              boxShadow: const [
+                BoxShadow(color: Color(0xffD6A2FF), blurRadius: 70),
+              ],
+              shape: BoxShape.circle,
+              color: Color(0xff9556C6).withOpacity(0.07),
+            ),
           ),
         ),
       ),
@@ -63,11 +106,69 @@ class childImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Image.asset(ImageManager.secondchild, fit: BoxFit.cover);
+  }
+}
+
+class TopRightCircleTasbeeh extends StatelessWidget {
+  TopRightCircleTasbeeh({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenW = MediaQuery.of(context).size.width;
+    // خلي العرض والارتفاع متساويين عشان الدائرة تكون دائرية فعلاً
+    final double size = screenW * 0.6;
+
     return Positioned(
-      top: screenW / 5,
-      right: -screenW / 8,
-      //   bottom: -300,
-      child: Container(child: Image.asset(ImageManager.secondchild)),
+      top: screenH * 0.01,
+      right: -screenH * 0.08,
+      child: Opacity(
+        opacity: 0.8,
+        child: ClipOval(
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              boxShadow: const [
+                BoxShadow(color: Color(0xffD6A2FF), blurRadius: 70),
+              ],
+              shape: BoxShape.circle,
+              color: Color(0xff9556C6).withOpacity(0.07),
+            ),
+
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TasbeehImage(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TasbeehImage extends StatelessWidget {
+  const TasbeehImage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CounterWidget()),
+        );
+      },
+      child: Row(
+        children: [
+          SizedBox(width: screenW * 0.03),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+
+            child: Image.asset(ImageManager.tasbeeh, width: 160, height: 160),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -78,17 +179,14 @@ class LeftBottomCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double screenW = MediaQuery.of(context).size.width;
-    final double screenH = MediaQuery.of(context).size.height;
-
     return Positioned(
-      left: -40,
-      bottom: 170,
+      left: -screenW * 0.08,
+      bottom: screenW * 0.5,
       child: Opacity(
         opacity: 0.4,
         child: Container(
           width: screenW * 0.3,
-          height: screenH * 0.3,
+          height: screenH * 0.35,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
 
@@ -111,27 +209,33 @@ class QuestionCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double screenW = MediaQuery.of(context).size.width;
-    final double screenH = MediaQuery.of(context).size.height;
-
     return Positioned(
-      top: 60,
-      left: 20,
+      top: screenW * 0.1,
+      left: screenW * 0.09,
       child: Opacity(
-        opacity: 0.4,
-        child: Container(
-          width: screenW * 0.3,
-          height: screenH * 0.3,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
+        opacity: 0.8,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LearnTogetherScreen()),
+            );
+          },
+          child: Container(
+            width: screenW * 0.2,
+            height: screenH * 0.2,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
 
-            boxShadow: [
-              BoxShadow(
-                color: const Color.fromARGB(255, 193, 180, 228),
-                blurRadius: 20,
-                spreadRadius: 10,
-              ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromARGB(255, 168, 151, 214),
+                  //blurRadius: 20,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: Image.asset(ImageManager.question),
           ),
         ),
       ),
@@ -140,31 +244,42 @@ class QuestionCircle extends StatelessWidget {
 }
 
 class WinCircle extends StatelessWidget {
-  const WinCircle({Key? key}) : super(key: key);
-
+  WinCircle({Key? key, required this.childId}) : super(key: key);
+  int childId;
   @override
   Widget build(BuildContext context) {
-    final double screenW = MediaQuery.of(context).size.width;
-    final double screenH = MediaQuery.of(context).size.height;
+    final screenW = MediaQuery.of(context).size.width;
+    final screenH = MediaQuery.of(context).size.height;
 
     return Positioned(
-      top: screenH / 3,
-      left: screenW / 5,
+      top: screenH / 4,
+      left: screenW / 6,
       child: Opacity(
-        opacity: 0.4,
-        child: Container(
-          width: screenW * 0.3,
-          height: screenH * 0.3,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-
-            boxShadow: [
-              BoxShadow(
-                color: const Color.fromARGB(255, 165, 161, 173),
-                blurRadius: 20,
-                spreadRadius: 10,
+        opacity: 0.6,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TopStudent(childId: childId),
               ),
-            ],
+            );
+          },
+          child: Container(
+            width: screenW * 0.15,
+            height: screenH * 0.15,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromARGB(255, 165, 161, 173),
+                  blurRadius: 6,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: Image.asset(ImageManager.owner),
           ),
         ),
       ),
@@ -182,13 +297,13 @@ class RightBottomCircle extends StatelessWidget {
     final double screenH = MediaQuery.of(context).size.height;
 
     return Positioned(
-      bottom: -55,
-      right: -45,
+      bottom: -screenW * 0.08,
+      right: -screenH / 17,
       child: Opacity(
         opacity: 0.6,
         child: Container(
-          width: screenW * 0.36,
-          height: screenH * 0.2,
+          width: screenW * 0.4,
+          height: screenH * 0.21,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
 

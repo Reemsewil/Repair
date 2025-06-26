@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SpeechBubblePage extends StatelessWidget {
-  const SpeechBubblePage({super.key});
-
+  SpeechBubblePage({super.key});
+  String text =
+      'الاعتذار هو خير وسيلة لتصحيح الخطأ . \nو لذلك لنقم بالاستغفار بصدق';
   @override
   Widget build(BuildContext context) {
     return
@@ -34,10 +35,7 @@ class SpeechBubblePage extends StatelessWidget {
             // Speech bubble
             Align(
               //  alignment: Alignment.centerLeft,
-              child: SpeechBubble(
-                text:
-                    'الاعتذار هو خير وسيلة لتصحيح الخطأ . \nو لذلك لنقم بالاستغفار بصدق',
-              ),
+              child: SpeechBubble(text: text),
             ),
             const SizedBox(width: 8),
             // Character image

@@ -1,5 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,6 +7,7 @@ import '../../config/header_config.dart';
 import '../../core/constants/url_manager.dart';
 import '../../core/error/exceptions.dart';
 import '../../core/success/success.dart';
+import '../../dio_interceptor.dart';
 import '../../models/child/create_child_response.dart';
 import '../../models/child/get_children_response.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -24,9 +24,9 @@ abstract class ChildrenService {
 }
 
 class ChildrenServiceImp implements ChildrenService {
-  final Dio dio;
+  final dio = DioClient.dio;
 
-  ChildrenServiceImp({required this.dio});
+  ChildrenServiceImp();
   @override
   Future<CreateChildResponse> createChild({
     required String name,
@@ -40,27 +40,12 @@ class ChildrenServiceImp implements ChildrenService {
       log("📦 Image asset path: $imagePath");
 
       // 🔧 Helper to convert asset image to a File
-      Future<File> getAssetImageFile(String assetPath) async {
-        final byteData = await rootBundle.load(assetPath);
-        final tempDir = await getTemporaryDirectory();
-        final file = File('${tempDir.path}/temp_image.png');
-        await file.writeAsBytes(byteData.buffer.asUint8List());
-        return file;
-      }
-
-      final file = await getAssetImageFile(imagePath);
-
-      if (!(await file.exists())) {
-        log("❌ File does not exist after conversion: ${file.path}");
-        throw Exception("ملف الصورة غير موجود");
-      }
-
-      log("✅ File ready at: ${file.path}");
+      log("✅ File ready at:");
       final formData = FormData.fromMap({
         'name': name,
         'gender': gender,
         'birth_date': birthDate,
-        'image': await MultipartFile.fromFile(file.path),
+        // 'image': await MultipartFile.fromFile(file.path),
       });
 
       // Log fields manually
@@ -70,9 +55,6 @@ class ChildrenServiceImp implements ChildrenService {
       );
       log(
         "birth_date: ${formData.fields.firstWhere((f) => f.key == 'birth_date').value}",
-      );
-      log(
-        "image filename: ${(formData.files.firstWhere((f) => f.key == 'image').value as MultipartFile).filename}",
       );
 
       log("✅ File ready at: ${formData}");
@@ -84,9 +66,30 @@ class ChildrenServiceImp implements ChildrenService {
         data: formData,
       );
 
-      log("✅ Request successful, parsing response...");
-
-      return CreateChildResponse.fromJson(response.data);
+      if (response.statusCode == 200) {
+        log("✅ Request successful, parsing response...");
+        return CreateChildResponse.fromJson(response.data);
+      } else if (response.statusCode == 400) {
+        // Bad request
+        log("⚠️ Bad request - 400");
+        throw ServerException(
+          message: response.data['message'] ?? "طلب غير صالح",
+        );
+      } else if (response.statusCode == 401) {
+        // Unauthorized
+        log("⚠️ Unauthorized - 401");
+        throw ServerException(message: "غير مخول، يرجى تسجيل الدخول");
+      } else if (response.statusCode == 500) {
+        // Server error
+        log("⚠️ Server error - 500");
+        throw ServerException(message: "خطأ في الخادم، يرجى المحاولة لاحقا");
+      } else {
+        // Other unexpected statuses
+        log("⚠️ Unexpected status code: ${response.statusCode}");
+        throw ServerException(
+          message: "حدث خطأ غير متوقع (رمز الحالة: ${response.statusCode})",
+        );
+      }
     } on DioException catch (e) {
       log("❌ DioException occurred");
       log("❌ Message: ${e.message}");
@@ -107,18 +110,53 @@ class ChildrenServiceImp implements ChildrenService {
   @override
   Future<GetChildrenResponse> getChildren() async {
     try {
+      log("🔔 Started getChildren()");
+      log("📍 API URL: ${UrlManager.getChildren}");
+
       final response = await dio.get(
         UrlManager.getChildren,
         options: HeaderConfig.getHeader(useToken: true),
       );
+      log("📶 Status code: ${response.statusCode}");
+      log("📦 Full response: ${jsonEncode(response.data)}");
 
       if (response.statusCode == 200) {
+        log(response.data.toString());
+        log("✅ Request successful, parsing response...");
         return GetChildrenResponse.fromJson(response.data);
+      } else if (response.statusCode == 400) {
+        log("⚠️ Bad request - 400");
+        throw ServerException(
+          message: response.data['message'] ?? "طلب غير صالح",
+        );
+      } else if (response.statusCode == 401) {
+        log("⚠️ Unauthorized - 401");
+        throw ServerException(message: "غير مخول، يرجى تسجيل الدخول");
+      } else if (response.statusCode == 404) {
+        log("⚠️ Not found - 404");
+        throw ServerException(message: "المورد غير موجود");
+      } else if (response.statusCode == 500) {
+        log("⚠️ Server error - 500");
+        throw ServerException(message: "خطأ في الخادم، يرجى المحاولة لاحقًا");
+      } else {
+        log("⚠️ Unexpected status code: ${response.statusCode}");
+        throw ServerException(
+          message: "حدث خطأ غير متوقع (رمز الحالة: ${response.statusCode})",
+        );
       }
-      throw ServerException(message: 'Failed to get children');
     } on DioException catch (e) {
-      log('Error in getChildren: ${e.message}');
-      throw ServerException(message: e.message ?? 'Failed to get children');
+      log("❌ DioException occurred");
+      log("❌ Message: ${e.message}");
+      log("❌ Status code: ${e.response?.statusCode}");
+      log("❌ Response data: ${e.response?.data}");
+
+      throw ServerException(
+        message: e.response?.data['message'] ?? 'فشل في تحميل قائمة الأبناء',
+      );
+    } catch (e, stack) {
+      log("❌ Unexpected Error: $e");
+      log("📄 Stacktrace:\n$stack");
+      throw ServerException(message: 'حدث خطأ غير متوقع');
     }
   }
 }

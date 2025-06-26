@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../../dio_interceptor.dart';
+
 class Governorate {
   final String name;
 
@@ -41,9 +43,9 @@ class Town {
 }
 
 class LocationService {
-  final Dio dio;
+  final dio = DioClient.dio;
 
-  LocationService(this.dio);
+  LocationService();
 
   Future<List<T>> fetchLocationList<T>(
     String url,

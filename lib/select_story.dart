@@ -1,61 +1,73 @@
+import 'dart:developer';
+
+import 'package:just_audio/just_audio.dart';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:najati_test/core/constants/image_manager.dart';
+import 'package:najati_test/settings.dart';
 import 'core/constants/color_manager.dart';
+import 'core/constants/url_manager.dart';
 import 'custom_widget.dart';
 import 'main.dart';
+import 'models/educational_section/get_story_response.dart';
+import 'services/api/educational_section.dart';
 import 'stack.dart';
 
 class SelectStory extends StatefulWidget {
-  const SelectStory({super.key});
+  SelectStory({super.key, required this.name, required this.result});
+  String name;
+  List<CharacterItem> result;
 
   @override
   State<SelectStory> createState() => _SelectStoryState();
 }
 
 class _SelectStoryState extends State<SelectStory> {
-  int currentIndex = 0;
+  String audioPath = "";
 
-  final List<Map<String, String>> cards = [
-    {
-      'image': 'assets/images/smile.png',
-      'text':
-          'ثم يجلس بين السجدتين و يقول ( رب اغفر لي وارحمني واهدني وارزقني واجبرني وعافني ).',
-    },
-    {
-      'image': 'assets/images/smile.png',
-      'text': 'يقوم من السجود إلى الوقوف مرة أخرى.',
-    },
-    {
-      'image': 'assets/images/smile.png',
-      'text': 'يكبر ويذهب إلى السجدة الثانية.',
-    },
-    {
-      'image': 'assets/images/smile.png',
-      'text': 'يقرأ التحيات في الجلوس الأخير.',
-    },
-    {
-      'image': 'assets/images/smile.png',
-      'text': 'يصلي على النبي محمد صلى الله عليه وسلم.',
-    },
-    {
-      'image': 'assets/images/smile.png',
-      'text': 'يسلم على اليمين ثم على اليسار لإنهاء الصلاة.',
-    },
-  ];
+  String audioUrl = UrlManager.baseUrl;
 
-  void nextCard() {
-    if (currentIndex < cards.length - 1) {
-      setState(() {
-        currentIndex++;
-      });
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  //ios
+  // <key>NSAppTransportSecurity</key>
+  // <dict>
+  //   <key>NSAllowsArbitraryLoads</key>
+  //   <true/>
+  // </dict>
+
+  Future<void> playAudio(String url) async {
+    try {
+      log("Attempting to play: $url");
+
+      await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+      await _audioPlayer.play();
+
+      log("Audio should now be playing.");
+    } catch (e) {
+      log("Audio error: $e");
     }
   }
 
-  void prevCard() {
-    if (currentIndex > 0) {
-      setState(() {
-        currentIndex--;
-      });
-    }
+  bool isLoading = true;
+  final ValueNotifier<int> index = ValueNotifier<int>(0);
+
+  @override
+  void dispose() {
+    index.dispose();
+
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _audioPlayer.playerStateStream.listen((state) {
+      log("Player state: ${state.processingState} | Playing: ${state.playing}");
+    });
   }
 
   @override
@@ -72,165 +84,294 @@ class _SelectStoryState extends State<SelectStory> {
           Positioned(
             top: screenH * 0.12,
             left: 20,
-            child: Icon(
-              Icons.settings,
-              color: ColorManager.deepPurple,
-              size: 40,
+            child: Material(
+              color: Colors.transparent,
+
+              // child: GestureDetector(
+              //   onTap: () async {
+              //     await _audioPlayer.stop(); // 👈 stop the audio
+
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (context) => Settings()),
+              //     );
+              //   },
+              //   child: Icon(
+              //     Icons.settings,
+              //     color: ColorManager.deepPurple,
+              //     size: 40,
+              //   ),
+              // ),
             ),
           ),
 
           // Main content
-          Column(
-            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: screenH * 0.12),
-                child: Container(
-                  width: screenW * 0.54,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: Center(
-                    child: const Text(
-                      "لنتعلم معاً الوضوء ",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: ColorManager.deepPurple,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // SizedBox(height: screenH * 0.05),
-
-              // Row of learning cards
-              AnimatedSwitcher(
-                duration: Duration(milliseconds: 500),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return SlideTransition(
-                    position: Tween<Offset>(
-                      begin: Offset(1.0, 0.0), // slide in from right
-                      end: Offset(0.0, 0.0),
-                    ).animate(animation),
-                    child: FadeTransition(opacity: animation, child: child),
-                  );
-                },
-
-                child: Container(
-                  key: ValueKey<int>(currentIndex), // IMPORTANT!
-                  margin: EdgeInsets.symmetric(horizontal: 24),
-                  padding: EdgeInsets.all(16),
-
-                  width: screenW * 0.85,
-                  height: screenH * 0.53,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFBDE9E5),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 12,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: screenH * 0.12),
+                  child: Row(
                     children: [
-                      // Image
-                      Container(
-                        width: screenW * 0.6,
-                        height: screenH * 0.25,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.white,
-                        ),
-                        child: Image.asset(
-                          cards[currentIndex]['image']!,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Text + Sound Icon
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          circularArrowButton(
-                            icon: Icons.arrow_back,
-                            onTap: () {
-                              // handle back
-                              if (currentIndex > 0) {
-                                setState(() => currentIndex--);
-                              }
-                            },
-                          ),
-                          circularArrowButton(
-                            icon: Icons.arrow_forward,
-                            onTap: () {
-                              // handle forward
-                              if (currentIndex < cards.length - 1) {
-                                setState(() => currentIndex++);
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: screenW * 0.07),
+                        child: Material(
+                          color: Colors.transparent,
 
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //   children: [
-                      //     Expanded(
-                      //       child: Text(
-                      //         cards[currentIndex]['text']!,
-                      //         style: TextStyle(
-                      //           fontSize: 18,
-                      //           fontFamily: 'Cairo',
-                      //         ),
-                      //         textAlign: TextAlign.right,
-                      //       ),
-                      //     ),
-                      //     IconButton(
-                      //       icon: Icon(Icons.volume_up, color: Colors.grey),
-                      //       onPressed: () {
-                      //         // Play audio logic
-                      //       },
-                      //     ),
-                      //   ],
-                      // ),
+                          child: GestureDetector(
+                            onTap: () async {
+                              await _audioPlayer.stop(); // 👈 stop the audio
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Settings(),
+                                ),
+                              );
+                            },
+                            child: Icon(
+                              Icons.settings,
+                              color: ColorManager.deepPurple,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                          child: Container(
+                            width: screenW * 0.54,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  " ${widget.name} ",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: ColorManager.deepPurple,
+                                  ),
+                                ),
+                                Text(
+                                  "لنتعلم معاً ",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: ColorManager.deepPurple,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 32),
+                // SizedBox(height: screenH * 0.05),
+                ValueListenableBuilder<int>(
+                  valueListenable: index,
+                  builder: (context, index, _) {
+                    // Row of learning cards
+                    return AnimatedSwitcher(
+                      duration: Duration(milliseconds: 500),
+                      transitionBuilder: (
+                        Widget child,
+                        Animation<double> animation,
+                      ) {
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: Offset(1.0, 0.0), // slide in from right
+                            end: Offset(0.0, 0.0),
+                          ).animate(animation),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        );
+                      },
 
-              // Navigation Arrows
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios),
-                    iconSize: 32,
-                    onPressed: prevCard,
-                    color: Colors.deepPurple,
+                      child: Container(
+                        key: ValueKey<int>(index), // 👈 IMPORTANT: add this!
+                        margin: EdgeInsets.symmetric(horizontal: 13),
+                        padding: EdgeInsets.all(16),
+
+                        width: screenW * 0.85,
+                        height: screenH * 0.53,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFBDE9E5),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 12,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Image
+                              SizedBox(height: screenH * 0.032),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  //  const SizedBox(width: 50),
+                                  Container(
+                                    width: screenW * 0.6,
+                                    height: screenH * 0.29,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: Colors.white,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        '${UrlManager.baseUrl}${widget.result[index].image}',
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (
+                                          context,
+                                          child,
+                                          progress,
+                                        ) {
+                                          if (progress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(Icons.broken_image),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 16),
+                              // Text + Sound Icon
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(widget.result[index].description),
+                                  const SizedBox(width: 20),
+                                  InkWell(
+                                    onTap: () {
+                                      log("===");
+                                      audioPath =
+                                          "$audioUrl${widget.result[index].sound}";
+
+                                      playAudio(audioPath);
+                                    },
+                                    child: Container(
+                                      width: screenW * 0.09,
+                                      height: screenW * 0.09,
+
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          243,
+                                          238,
+                                          238,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Image(
+                                        image: AssetImage(ImageManager.voice),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                //      const SizedBox(height: 32),
+
+                // Navigation Arrows
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: circularArrowButton(
+                          icon: Icons.arrow_back,
+                          onTap: () {
+                            // handle back
+                            if (index.value > 0) {
+                              print(
+                                'Forward tapped. Current index.value: ${index.value}',
+                              );
+
+                              log(index.value.toString());
+
+                              if (index.value > 0) {
+                                index.value--;
+                              }
+
+                              log(index.value.toString());
+                            }
+                          },
+                        ),
+                      ),
+                      Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: circularArrowButton(
+                          icon: Icons.arrow_forward,
+                          onTap: () {
+                            print('Arrow forward clicked');
+
+                            // handle forward
+                            //    nextCard();
+                            log(
+                              'Forward tapped. Current index.value: ${index.value}',
+                            );
+                            log(
+                              'Forward tapped. Current index.value: ${widget.result.length}',
+                            );
+                            log("Result list length: ${widget.result.length}");
+
+                            if (index.value < widget.result.length - 1) {
+                              log(
+                                'Forward tapped. Current index.value: ${index.value}',
+                              );
+
+                              index.value++;
+                              log(
+                                'Forward tapped. Current index.value: ${index.value}',
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 50),
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward_ios),
-                    iconSize: 32,
-                    onPressed: nextCard,
-                    color: Colors.deepPurple,
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
 
           // "m" speech-bubble avatar

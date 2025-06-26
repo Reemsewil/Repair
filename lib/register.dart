@@ -54,15 +54,16 @@ class _RegisterState extends State<Register> {
     cityController.dispose();
     districtController.dispose();
     townController.dispose();
+    super.dispose();
   }
 
+  bool isLoading = false;
   late final LocationService locationService;
 
   Governorate? selectedGovernorate;
   City? selectedCity;
   District? selectedDistrict;
   Town? selectedTown;
-  final dio = Dio(BaseOptions(baseUrl: 'https://example.com/{{id}}'));
 
   List<Governorate> governorates = [];
   List<City> cities = [];
@@ -72,10 +73,13 @@ class _RegisterState extends State<Register> {
   @override
   void initState() {
     super.initState();
-    locationService = LocationService(dio);
+    locationService = LocationService();
 
     fetchGovernorates();
   }
+
+  // _Exception (Exception: Failed to load governorates: DioException [connection error]: The connection errored: Connection failed This indicates an error which most likely cannot be solved by the library.
+  // Error: SocketException: Connection failed (OS Error: Network is unreachable, errno = 101), address = najati.webmyidea.com, port = 443)
 
   Future<void> fetchGovernorates() async {
     governorates = await locationService.fetchLocationList(
@@ -144,7 +148,7 @@ class _RegisterState extends State<Register> {
                   SizedBox(height: screenH * 0.1),
                   Container(
                     width: screenW * 0.9,
-                    height: screenH * 0.77,
+                    height: screenH * 0.81,
                     decoration: BoxDecoration(
                       color: Color(0x73C2CEE3).withOpacity(0.45),
                       borderRadius: BorderRadius.circular(12),
@@ -181,24 +185,10 @@ class _RegisterState extends State<Register> {
                             SizedBox(height: screenH * 0.016),
 
                             TextFormField(
+                              textAlign: TextAlign.end,
                               controller: nameController,
                               style: TextStyle(color: Colors.black),
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                filled: true,
-                                fillColor: Colors.transparent,
-                              ),
+                              decoration: dropdownDecoration,
                             ),
                             SizedBox(height: screenH * 0.016),
                             // Second TextFormField with label
@@ -211,24 +201,10 @@ class _RegisterState extends State<Register> {
                             ),
                             SizedBox(height: screenH * 0.016),
                             TextFormField(
+                              keyboardType: TextInputType.number,
                               controller: phoneController,
                               style: TextStyle(color: Colors.black),
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                filled: true,
-                                fillColor: Colors.transparent,
-                              ),
+                              decoration: dropdownDecoration,
                             ),
                             SizedBox(height: screenH * 0.03),
                             // Third and Fourth TextFormFields in one row
@@ -244,19 +220,32 @@ class _RegisterState extends State<Register> {
                                       ),
                                       SizedBox(height: 10),
                                       DropdownButtonFormField<City>(
+                                        isExpanded: true,
                                         value: selectedCity,
                                         items:
                                             cities.map((city) {
                                               return DropdownMenuItem(
                                                 value: city,
-                                                child: Text(city.name),
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+
+                                                  child: Text(
+                                                    city.name,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
                                               );
                                             }).toList(),
+
                                         onChanged: (value) async {
                                           setState(() {
                                             selectedCity = value;
                                             selectedDistrict = null;
                                             selectedTown = null;
+                                            cityController.text =
+                                                value?.name ?? '';
                                             districts.clear();
                                             towns.clear();
                                           });
@@ -273,7 +262,7 @@ class _RegisterState extends State<Register> {
                                     ],
                                   ),
                                 ),
-                                SizedBox(width: 20),
+                                SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -284,13 +273,24 @@ class _RegisterState extends State<Register> {
                                       ),
                                       SizedBox(height: 10),
                                       DropdownButtonFormField<Governorate>(
+                                        isExpanded:
+                                            true, // ✅ Prevents horizontal overflow
                                         //      itemHeight: 50,
                                         value: selectedGovernorate,
                                         items:
                                             governorates.map((governorate) {
                                               return DropdownMenuItem(
                                                 value: governorate,
-                                                child: Text(governorate.name),
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+
+                                                  child: Text(
+                                                    governorate.name,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
                                               );
                                             }).toList(),
                                         onChanged: (value) async {
@@ -299,6 +299,8 @@ class _RegisterState extends State<Register> {
                                             selectedCity = null;
                                             selectedDistrict = null;
                                             selectedTown = null;
+                                            governorateController.text =
+                                                value?.name ?? '';
                                             cities.clear();
                                             districts.clear();
                                             towns.clear();
@@ -327,16 +329,28 @@ class _RegisterState extends State<Register> {
                                       ),
                                       SizedBox(height: 10),
                                       DropdownButtonFormField<Town>(
+                                        isExpanded:
+                                            true, // ✅ Prevents horizontal overflow
+
                                         value: selectedTown,
                                         items:
                                             towns.map((town) {
                                               return DropdownMenuItem(
                                                 value: town,
-                                                child: Text(town.name),
+                                                child: FittedBox(
+                                                  child: Text(
+                                                    town.name,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
                                               );
                                             }).toList(),
                                         onChanged: (value) {
                                           setState(() {
+                                            townController.text =
+                                                value?.name ?? '';
                                             selectedTown = value;
                                           });
                                         },
@@ -345,7 +359,7 @@ class _RegisterState extends State<Register> {
                                     ],
                                   ),
                                 ),
-                                SizedBox(width: 20),
+                                SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -355,32 +369,48 @@ class _RegisterState extends State<Register> {
                                         style: TextStyle(color: Colors.black),
                                       ),
                                       SizedBox(height: 10),
-                                      DropdownButtonFormField<District>(
-                                        value: selectedDistrict,
-                                        items:
-                                            districts.map((district) {
-                                              return DropdownMenuItem(
-                                                value: district,
-                                                child: Text(district.name),
+                                      SingleChildScrollView(
+                                        child: DropdownButtonFormField<
+                                          District
+                                        >(
+                                          isExpanded: true,
+                                          value: selectedDistrict,
+                                          items:
+                                              districts.map((district) {
+                                                return DropdownMenuItem(
+                                                  value: district,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+
+                                                    child: Text(
+                                                      district.name,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                          onChanged: (value) async {
+                                            setState(() {
+                                              selectedDistrict = value;
+                                              selectedTown = null;
+                                              districtController.text =
+                                                  value?.name ?? '';
+                                              towns.clear();
+                                            });
+                                            if (value != null &&
+                                                selectedGovernorate != null &&
+                                                selectedCity != null) {
+                                              await fetchTowns(
+                                                selectedGovernorate!.name,
+                                                selectedCity!.name,
+                                                value.name,
                                               );
-                                            }).toList(),
-                                        onChanged: (value) async {
-                                          setState(() {
-                                            selectedDistrict = value;
-                                            selectedTown = null;
-                                            towns.clear();
-                                          });
-                                          if (value != null &&
-                                              selectedGovernorate != null &&
-                                              selectedCity != null) {
-                                            await fetchTowns(
-                                              selectedGovernorate!.name,
-                                              selectedCity!.name,
-                                              value.name,
-                                            );
-                                          }
-                                        },
-                                        decoration: dropdownDecoration,
+                                            }
+                                          },
+                                          decoration: dropdownDecoration,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -399,6 +429,9 @@ class _RegisterState extends State<Register> {
                     width: screenW * 0.9,
                     child: ElevatedButton(
                       onPressed: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
                         final model = RegisterRequestModel(
                           name: nameController.text.trim(),
                           phone: phoneController.text.trim(),
@@ -407,11 +440,23 @@ class _RegisterState extends State<Register> {
                           district: districtController.text.trim(),
                           town: townController.text.trim(),
                         );
+                        print("im in herrrrrrrrrrrrre");
+                        print(
+                          'RegisterRequestModel: '
+                          'name: ${model.name}, '
+                          'phone: ${model.phone}, '
+                          'governorate: ${model.governorate}, '
+                          'city: ${model.city}, '
+                          'district: ${model.district}, '
+                          'town: ${model.town}',
+                        );
                         final reg = RegisterService();
+
                         final isSuccess = await reg.register(model);
 
                         if (isSuccess) {
-                          Navigator.push(
+                          isLoading = false;
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder:
@@ -434,7 +479,10 @@ class _RegisterState extends State<Register> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text("التالي"),
+                      child:
+                          isLoading
+                              ? Center(child: CircularProgressIndicator())
+                              : Text("التالي"),
                     ),
                   ),
                   SizedBox(height: screenH * 0.05),

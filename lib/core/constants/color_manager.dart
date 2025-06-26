@@ -68,7 +68,7 @@ class ColorManager {
   // Dhuhr Gradient
   static const List<Color> validdhuhrGradient = [
     Color(0xFFFEFFFB),
-    Color(0xFF99C3FF),
+    Color.fromARGB(255, 133, 183, 253),
   ];
 
   // Asr Gradient

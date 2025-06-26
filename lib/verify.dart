@@ -41,6 +41,7 @@ class _VerificationState extends State<Verification> {
     super.dispose();
   }
 
+  bool isLoading = false;
   void _startTimer() {
     setState(() {
       _secondsLeft = 15;
@@ -75,7 +76,7 @@ class _VerificationState extends State<Verification> {
     print("huiiiiiiiiiiiiii");
 
     code = _controllers.map((c) => c.text).join();
-
+    print(code);
     if (code.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("يرجى إدخال رمز مكون من 6 أرقام")),
@@ -101,10 +102,15 @@ class _VerificationState extends State<Verification> {
 
       if (result.status == "success") {
         print("huiiiiiiiiiiiiii");
-
+        isLoading = false;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => CreateChild()),
+          MaterialPageRoute(
+            builder:
+                (_) => CreateChild(
+                  (result as VerifyResponseModel).data!.user.name,
+                ),
+          ),
         );
       } else if (result.status == "failure") {
         _handleError(result.message);
@@ -139,6 +145,9 @@ class _VerificationState extends State<Verification> {
             border: InputBorder.none,
           ),
           onChanged: (value) {
+            print("controllers length: ${_controllers.length}");
+            print("focusNodes length: ${_focusNodes.length}");
+
             if (value.length == 1 && index < 5) {
               _focusNodes[index + 1].requestFocus();
             } else if (value.isEmpty && index > 0) {
@@ -239,13 +248,18 @@ class _VerificationState extends State<Verification> {
                   ),
                   SizedBox(height: screenH * 0.15),
                   SizedBox(
-                    width: screenW * 0.8,
+                    height: screenH * 0.06,
+
+                    width: screenW * 0.9,
                     child: ElevatedButton(
                       onPressed: () {
                         print("huiiiiiiiiiiiiii");
                         code = _controllers.map((c) => c.text).join();
                         print("Entered OTP: $code");
                         //
+                        setState(() {
+                          isLoading = true;
+                        });
 
                         // RegisterService reg = RegisterService();
                         // VerifyRequestModel model = VerifyRequestModel(
@@ -255,7 +269,7 @@ class _VerificationState extends State<Verification> {
                         // );
                         // reg.verify(model);
                         _verifyCode();
-                        _controllers.clear();
+                        // _controllers.clear();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
@@ -264,7 +278,10 @@ class _VerificationState extends State<Verification> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text("التالي", style: verifyStyle),
+                      child:
+                          isLoading
+                              ? Center(child: CircularProgressIndicator())
+                              : Text("التالي", style: verifyStyle),
                     ),
                   ),
                 ],

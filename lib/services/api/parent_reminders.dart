@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
 import '../../config/header_config.dart';
 import '../../core/constants/url_manager.dart';
+import '../../dio_interceptor.dart';
 import '../../models/parent_reminder/create_reminder_response.dart';
 import '../../models/parent_reminder/get_reminder_response.dart';
 
 class RemindersService {
-  final Dio _dio;
+  final dio = DioClient.dio;
 
-  RemindersService(this._dio);
+  RemindersService();
 
   Future<CreateReminderResponse> createReminder({
     required int prayerId,
@@ -20,7 +21,7 @@ class RemindersService {
       'minutes': minutes,
     });
 
-    final response = await _dio.post(
+    final response = await dio.post(
       UrlManager.createParentReminder,
       options: HeaderConfig.getHeader(useToken: true),
       data: formData,
@@ -30,7 +31,7 @@ class RemindersService {
   }
 
   Future<GetReminderResponse> getReminders({required int childId}) async {
-    final response = await _dio.get(
+    final response = await dio.get(
       '${UrlManager.getParentReminder}/$childId/reminders',
       options: HeaderConfig.getHeader(useToken: true),
     );

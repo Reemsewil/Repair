@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:najati_test/core/constants/image_manager.dart';
 import 'package:najati_test/custom_widget.dart';
 import 'package:najati_test/main.dart';
@@ -11,12 +10,12 @@ import 'package:najati_test/get_child.dart';
 import 'package:najati_test/verify.dart';
 
 import 'error/exceptions.dart';
-import 'features/children/presentation/bloc/children_bloc.dart';
-import 'models/child/create_child_response.dart';
+
 import 'services/api/children.dart';
 
 class CreateChild extends StatefulWidget {
-  CreateChild({super.key});
+  CreateChild(this.name);
+  String? name;
   @override
   State<CreateChild> createState() => _CreateChildState();
 }
@@ -24,7 +23,7 @@ class CreateChild extends StatefulWidget {
 class _CreateChildState extends State<CreateChild> {
   DateTime? selectedDate;
   String? selectedGender;
-
+  bool isLoading = false;
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -249,7 +248,9 @@ class _CreateChildState extends State<CreateChild> {
                   ),
                   SizedBox(height: screenH * 0.04),
                   SizedBox(
-                    width: screenW * 0.8,
+                    height: screenH * 0.06,
+
+                    width: screenW * 0.9,
                     child: ElevatedButton(
                       onPressed: () async {
                         if (nameController.text.isEmpty ||
@@ -260,27 +261,26 @@ class _CreateChildState extends State<CreateChild> {
                           );
                           return;
                         }
-                        ChildrenServiceImp serviceImp = ChildrenServiceImp(
-                          dio: Dio(),
-                        );
+                        setState(() {
+                          isLoading = true;
+                        });
+                        ChildrenServiceImp serviceImp = ChildrenServiceImp();
 
                         try {
                           final model = await serviceImp.createChild(
                             name: nameController.text,
-                            gender:
-                                (selectedGender == "ذكر")
-                                    ? selectedGender = "M"
-                                    : selectedGender = "F"!,
+                            gender: (selectedGender == "ذكر") ? "M" : "F",
+
                             birthDate: DateFormat(
                               'yyyy-MM-dd',
                             ).format(selectedDate!),
                             imagePath: ImageManager.active,
                           );
                           log("hiiiiii");
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => GetChildren(),
+                              builder: (context) => GetChildren(widget.name!),
                             ),
                           );
                         } catch (e) {
@@ -319,7 +319,10 @@ class _CreateChildState extends State<CreateChild> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text("التالي"),
+                      child:
+                          isLoading
+                              ? CircularProgressIndicator()
+                              : Text("التالي"),
                     ),
                   ),
                   SizedBox(height: screenH * 0.04),

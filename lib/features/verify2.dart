@@ -95,7 +95,7 @@ class _Verify2State extends State<Verify2> {
       if (result is VerifyResponseModel && result.status == "success") {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => CreateChild()),
+          MaterialPageRoute(builder: (_) => CreateChild("hala")),
         );
       } else if (result.status == "failure") {
         _handleError(result.message);

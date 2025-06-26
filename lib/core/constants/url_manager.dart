@@ -28,10 +28,17 @@ class UrlManager {
   // static const String getPrayersName = '$baseUrl/api/prayers';
   static const String getPrayerTimes = '$baseUrl/api/prayer-times';
   static const String getCharachters = '$baseUrl/api/characters';
-  static const String createCharachter =
-      '$baseUrl/api/children/1/choose_character/';
+  // static const String createCharachter ='$baseUrl/api/children/1/choose_character/';
 
   // child/Eductional_Section/departmnt
-  static const String getStoryFromId = '$baseUrl/api/educational_sections';
+  static const String leaderBoard = '$baseUrl/api/children/';
+  static const String getSunnah = '$baseUrl/api/child/1/prayers/sunnah';
+
+  //static const String turnOn = '$baseUrl/api/child/1/prayers/sunnah/20/1';
+
+  // static const String turnOf = '$baseUrl/api/child/1/prayers/sunnah/20/0';
+  static const String settings = '$baseUrl/api/settings';
+
+  static const String getStoryFromId = '$baseUrl/api/educational_sections/';
   static const String getSectionStory = '$baseUrl/api/educational_sections';
 }

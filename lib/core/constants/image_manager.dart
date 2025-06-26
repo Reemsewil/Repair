@@ -11,6 +11,8 @@ class ImageManager {
   static const String person = '$_imagePath/person.png';
   static const String tasbeeh = '$_imagePath/tasbeeh.png';
   static const String question = '$_imagePath/question.png';
+  static const String voice = '$_imagePath/voice.png';
+  static const String activeImage = '$_imagePath/active_image.png';
 
   static const String Boos = '$_imagePath/Boos.png';
   static const String Boo = '$_imagePath/Boo.png';
