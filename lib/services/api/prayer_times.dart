@@ -26,6 +26,7 @@ class PrayerTimesServiceImp implements PrayerTimesService {
         UrlManager.getPrayerTimes,
         options: HeaderConfig.getHeader(useToken: true),
       );
+      // log(response.);
 
       if (response.statusCode == 200) {
         log("the request successsssssss");
@@ -33,7 +34,7 @@ class PrayerTimesServiceImp implements PrayerTimesService {
         return GetPrayerTimesResponse.fromJson(response.data);
       }
       log("++++++++00000000000++++++");
-
+      log(response.data);
       throw ServerException(message: 'Failed to get prayer times');
     } on DioException catch (e) {
       log("++++++++++++tttttttttttttttt++");
@@ -41,5 +42,31 @@ class PrayerTimesServiceImp implements PrayerTimesService {
       log('Error in getPrayerTimes: ${e.message}');
       throw ServerException(message: e.message ?? 'Failed to get prayer times');
     }
+  }
+}
+
+class PrayerTimesServiceMock implements PrayerTimesService {
+  @override
+  Future<GetPrayerTimesResponse> getPrayerTimes() async {
+    // Just fake data
+    return GetPrayerTimesResponse(
+      status: "success",
+      data: PrayerData(
+        date: "2025-08-29",
+        prayerTimes: PrayerTimes(
+          fajr: "04:15",
+          sunrise: "06:10",
+          dhuhr: "12:30",
+          asr: "16:15",
+          sunset: "18:50",
+          maghrib: "19:05",
+          isha: "20:35",
+          imsak: "04:00",
+          midnight: "23:59",
+          firstThird: "21:00",
+          lastThird: "03:00",
+        ),
+      ),
+    );
   }
 }

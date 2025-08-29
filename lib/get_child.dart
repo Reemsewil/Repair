@@ -142,7 +142,7 @@ class _GetChildrenState extends State<GetChildren> {
         ),
         SizedBox(height: screenH * 0.04),
         SizedBox(
-          height: screenH * 0.115 * childrenResponse!.data.length,
+          height: screenH * 0.12 * childrenResponse!.data.length,
           child: ListView.builder(
             physics: NeverScrollableScrollPhysics(),
             padding: EdgeInsets.all(screenH * 0.02),

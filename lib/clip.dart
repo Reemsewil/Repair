@@ -830,8 +830,14 @@ class _PrayerContainerState extends State<PrayerContainer> {
 
       log("im in loaddatea");
       print("========================++++++++++reeeem===============");
+      //شيل الكومنت لما يصير الريكويست صح
+      // final response = await service.getPrayerTimes();
+      // log(response.data.prayerTimes.asr);
+
+      // For mock (no server needed)
+      final service = PrayerTimesServiceMock();
+
       final response = await service.getPrayerTimes();
-      log(response.data.prayerTimes.asr);
 
       log("Maraba");
 
